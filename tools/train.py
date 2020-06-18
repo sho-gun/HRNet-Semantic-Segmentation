@@ -225,7 +225,7 @@ def main():
                         map_location=lambda storage, loc: storage)
             best_mIoU = checkpoint['best_mIoU']
             last_epoch = checkpoint['epoch']
-            model.module.load_state_dict(checkpoint['state_dict'])
+            model.module.load_state_dict(checkpoint['state_dict'], strict=False)
             optimizer.load_state_dict(checkpoint['optimizer'])
             logger.info("=> loaded checkpoint (epoch {})"
                         .format(checkpoint['epoch']))

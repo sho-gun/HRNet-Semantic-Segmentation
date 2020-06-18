@@ -84,15 +84,15 @@ class Carla(BaseDataset):
                 })
         return files
 
-    def convert_label(self, label, inverse=False):
-        temp = label.copy()
-        if inverse:
-            for v, k in self.label_mapping.items():
-                label[temp == k] = v
-        else:
-            for k, v in self.label_mapping.items():
-                label[temp == k] = v
-        return label
+    # def convert_label(self, label, inverse=False):
+    #     temp = label.copy()
+    #     if inverse:
+    #         for v, k in self.label_mapping.items():
+    #             label[temp == k] = v
+    #     else:
+    #         for k, v in self.label_mapping.items():
+    #             label[temp == k] = v
+    #     return label
 
     def __getitem__(self, index):
         item = self.files[index]
@@ -109,7 +109,7 @@ class Carla(BaseDataset):
 
         label = cv2.imread(os.path.join(self.root,'carla',item["label"]),
                            cv2.IMREAD_GRAYSCALE)
-        label = self.convert_label(label)
+        # label = self.convert_label(label)
 
         image, label = self.gen_sample(image, label,
                                 self.multi_scale, self.flip,
@@ -190,7 +190,8 @@ class Carla(BaseDataset):
         preds = preds.cpu().numpy().copy()
         preds = np.asarray(np.argmax(preds, axis=1), dtype=np.uint8)
         for i in range(preds.shape[0]):
-            pred = self.convert_label(preds[i], inverse=True)
+            # pred = self.convert_label(preds[i], inverse=True)
+            pred = preds[i]
             save_img = Image.fromarray(pred)
             save_img.putpalette(palette)
             save_img.save(os.path.join(sv_path, name[i]+'.png'))
