@@ -55,7 +55,7 @@ class Carla(BaseDataset):
         if num_samples:
             self.files = self.files[:num_samples]
 
-        self.label_mapping = {0: ignore_label, 1: 1,
+        self.label_mapping = {0: 0, 1: 1,
                               2: 2, 3: 3,
                               4: 4, 5: 5,
                               6: 6, 7: 7,
