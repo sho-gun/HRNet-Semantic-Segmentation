@@ -15,7 +15,7 @@ from torch.nn import functional as F
 
 from .base_dataset import BaseDataset
 
-class Carla(BaseDataset):
+class AugCarla(BaseDataset):
     def __init__(self,
                  root,
                  list_path,
@@ -32,7 +32,7 @@ class Carla(BaseDataset):
                  mean=[0.485, 0.456, 0.406],
                  std=[0.229, 0.224, 0.225]):
 
-        super(Carla, self).__init__(ignore_label, base_size,
+        super(AugCarla, self).__init__(ignore_label, base_size,
                 crop_size, downsample_rate, scale_factor, mean, std,)
 
         self.root = root
@@ -99,7 +99,7 @@ class Carla(BaseDataset):
     def __getitem__(self, index):
         item = self.files[index]
         name = item["name"]
-        image = cv2.imread(os.path.join(self.root,'carla',item["img"]),
+        image = cv2.imread(os.path.join(self.root,'augCarla',item["img"]),
                            cv2.IMREAD_COLOR)
         size = image.shape
 
@@ -109,15 +109,13 @@ class Carla(BaseDataset):
 
             return image.copy(), np.array(size), name
 
-        label = cv2.imread(os.path.join(self.root,'carla',item["label"]),
-                           cv2.IMREAD_GRAYSCALE)
-        label = self.convert_label(label)
+        with open(os.path.join(self.root,'augCarla',item["label"]), 'r') as label_file:
+            label = label_file.readline().strip().split(' ')
+            label = [float(lbl) for lbl in label]
 
-        image, label = self.gen_sample(image, label,
-                                self.multi_scale, self.flip,
-                                self.center_crop_test)
+        image, _ = self.gen_sample(image, None, self.multi_scale, is_flip=False, center_crop_test=False)
 
-        return image.copy(), label.copy(), np.array(size), name
+        return image.copy(), np.array(label, dtype=np.float32), np.array(size), name
 
     def multi_scale_inference(self, model, image, scales=[1], flip=False):
         batch, _, ori_height, ori_width = image.size()

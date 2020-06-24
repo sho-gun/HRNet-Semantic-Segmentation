@@ -24,7 +24,7 @@ from utils.utils import get_world_size, get_rank
 
 def reduce_tensor(inp):
     """
-    Reduce the loss from all processes so that 
+    Reduce the loss from all processes so that
     process with rank 0 has the averaged results.
     """
     world_size = get_world_size()
@@ -37,7 +37,7 @@ def reduce_tensor(inp):
 
 def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
          trainloader, optimizer, model, writer_dict, device):
-    
+
     # Training
     model.train()
     batch_time = AverageMeter()
@@ -52,7 +52,8 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
     for i_iter, batch in enumerate(trainloader):
         images, labels, _, _ = batch
         images = images.to(device)
-        labels = labels.long().to(device)
+        # labels = labels.long().to(device)
+        labels = labels.to(device)
 
         losses, _ = model(images, labels)
         loss = losses.mean()
@@ -79,15 +80,15 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
             print_loss = ave_loss.average() / world_size
             msg = 'Epoch: [{}/{}] Iter:[{}/{}], Time: {:.2f}, ' \
                   'lr: {:.6f}, Loss: {:.6f}' .format(
-                      epoch, num_epoch, i_iter, epoch_iters, 
+                      epoch, num_epoch, i_iter, epoch_iters,
                       batch_time.average(), lr, print_loss)
             logging.info(msg)
-            
+
             writer.add_scalar('train_loss', print_loss, global_steps)
             writer_dict['train_global_steps'] = global_steps + 1
 
 def validate(config, testloader, model, writer_dict, device):
-    
+
     rank = get_rank()
     world_size = get_world_size()
     model.eval()
@@ -100,21 +101,33 @@ def validate(config, testloader, model, writer_dict, device):
             image, label, _, _ = batch
             size = label.size()
             image = image.to(device)
-            label = label.long().to(device)
+            # label = label.long().to(device)
+            label = label.to(device)
 
             losses, pred = model(image, label)
-            pred = F.upsample(input=pred, size=(
-                        size[-2], size[-1]), mode='bilinear')
-            loss = losses.mean()
-            reduced_loss = reduce_tensor(loss)
-            ave_loss.update(reduced_loss.item())
 
-            confusion_matrix += get_confusion_matrix(
-                label,
-                pred,
-                size,
-                config.DATASET.NUM_CLASSES,
-                config.TRAIN.IGNORE_LABEL)
+            if not config.LOSS.USE_MSE:
+                pred = F.upsample(input=pred, size=(
+                            size[-2], size[-1]), mode='bilinear')
+                loss = losses.mean()
+                reduced_loss = reduce_tensor(loss)
+                ave_loss.update(reduced_loss.item())
+
+                confusion_matrix += get_confusion_matrix(
+                    label,
+                    pred,
+                    size,
+                    config.DATASET.NUM_CLASSES,
+                    config.TRAIN.IGNORE_LABEL)
+
+            else:
+                loss = losses.mean()
+                reduced_loss = reduce_tensor(loss)
+                ave_loss.update(reduced_loss.item())
+
+    if config.LOSS.USE_MSE:
+        print_loss = ave_loss.average()
+        return print_loss, 0, 0
 
     confusion_matrix = torch.from_numpy(confusion_matrix).to(device)
     reduced_confusion_matrix = reduce_tensor(confusion_matrix)
@@ -134,9 +147,9 @@ def validate(config, testloader, model, writer_dict, device):
         writer.add_scalar('valid_mIoU', mean_IoU, global_steps)
         writer_dict['valid_global_steps'] = global_steps + 1
     return print_loss, mean_IoU, IoU_array
-    
 
-def testval(config, test_dataset, testloader, model, 
+
+def testval(config, test_dataset, testloader, model,
         sv_dir='', sv_pred=False):
     model.eval()
     confusion_matrix = np.zeros(
@@ -146,13 +159,13 @@ def testval(config, test_dataset, testloader, model,
             image, label, _, name = batch
             size = label.size()
             pred = test_dataset.multi_scale_inference(
-                        model, 
-                        image, 
-                        scales=config.TEST.SCALE_LIST, 
+                        model,
+                        image,
+                        scales=config.TEST.SCALE_LIST,
                         flip=config.TEST.FLIP_TEST)
-            
+
             if pred.size()[-2] != size[-2] or pred.size()[-1] != size[-1]:
-                pred = F.upsample(pred, (size[-2], size[-1]), 
+                pred = F.upsample(pred, (size[-2], size[-1]),
                                    mode='bilinear')
 
             confusion_matrix += get_confusion_matrix(
@@ -167,7 +180,7 @@ def testval(config, test_dataset, testloader, model,
                 if not os.path.exists(sv_path):
                     os.mkdir(sv_path)
                 test_dataset.save_pred(pred, sv_path, name)
-            
+
             if index % 100 == 0:
                 logging.info('processing: %d images' % index)
                 pos = confusion_matrix.sum(1)
@@ -187,7 +200,7 @@ def testval(config, test_dataset, testloader, model,
 
     return mean_IoU, IoU_array, pixel_acc, mean_acc
 
-def test(config, test_dataset, testloader, model, 
+def test(config, test_dataset, testloader, model,
         sv_dir='', sv_pred=True):
     model.eval()
     with torch.no_grad():
@@ -195,13 +208,13 @@ def test(config, test_dataset, testloader, model,
             image, size, name = batch
             size = size[0]
             pred = test_dataset.multi_scale_inference(
-                        model, 
-                        image, 
-                        scales=config.TEST.SCALE_LIST, 
+                        model,
+                        image,
+                        scales=config.TEST.SCALE_LIST,
                         flip=config.TEST.FLIP_TEST)
-            
+
             if pred.size()[-2] != size[0] or pred.size()[-1] != size[1]:
-                pred = F.upsample(pred, (size[-2], size[-1]), 
+                pred = F.upsample(pred, (size[-2], size[-1]),
                                    mode='bilinear')
 
             if sv_pred:

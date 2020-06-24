@@ -39,6 +39,7 @@ _C.MODEL.EXTRA = CN(new_allowed=True)
 
 _C.LOSS = CN()
 _C.LOSS.USE_OHEM = False
+_C.LOSS.USE_MSE = False
 _C.LOSS.OHEMTHRES = 0.9
 _C.LOSS.OHEMKEEP = 100000
 _C.LOSS.CLASS_BALANCE = True
@@ -111,7 +112,7 @@ _C.DEBUG.SAVE_HEATMAPS_PRED = False
 
 def update_config(cfg, args):
     cfg.defrost()
-    
+
     cfg.merge_from_file(args.cfg)
     cfg.merge_from_list(args.opts)
 
@@ -122,4 +123,3 @@ if __name__ == '__main__':
     import sys
     with open(sys.argv[1], 'w') as f:
         print(_C, file=f)
-

@@ -189,6 +189,8 @@ def main():
                                      thres=config.LOSS.OHEMTHRES,
                                      min_kept=config.LOSS.OHEMKEEP,
                                      weight=train_dataset.class_weights)
+    elif config.LOSS.USE_MSE:
+        criterion = nn.MSELoss()
     else:
         criterion = CrossEntropy(ignore_label=config.TRAIN.IGNORE_LABEL,
                                  weight=train_dataset.class_weights)
