@@ -52,8 +52,8 @@ def train(config, epoch, num_epoch, epoch_iters, base_lr, num_iters,
     for i_iter, batch in enumerate(trainloader):
         images, labels, _, _ = batch
         images = images.to(device)
-        # labels = labels.long().to(device)
-        labels = labels.to(device)
+        labels = labels.long().to(device)
+        # labels = labels.to(device)
 
         losses, _ = model(images, labels)
         loss = losses.mean()
@@ -101,8 +101,8 @@ def validate(config, testloader, model, writer_dict, device):
             image, label, _, _ = batch
             size = label.size()
             image = image.to(device)
-            # label = label.long().to(device)
-            label = label.to(device)
+            label = label.long().to(device)
+            # label = label.to(device)
 
             losses, pred = model(image, label)
 

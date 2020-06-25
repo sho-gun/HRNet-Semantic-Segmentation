@@ -38,12 +38,9 @@ class AugCarla(BaseDataset):
         self.root = root
         self.list_path = list_path
         self.num_classes = num_classes
-        self.class_weights = None
-        # self.class_weights = torch.FloatTensor([road0.8373, sidewalk0.918, building0.866, wall1.0345,
-        #                                 fence1.0166, pole0.9969, traffic light0.9754, traffic sign1.0489,
-        #                                 vegetation0.8786, terrain1.0023, sky0.9539, person0.9843,
-        #                                 rider1.1116, car0.9037, truck1.0865, bus1.0955,
-        #                                 train1.0865, motorcycle1.1529, bicycle1.0507]).cuda()
+
+        weight_coef = 10
+        self.class_weights = torch.FloatTensor([weight_coef/112.0, weight_coef/914.0, weight_coef/86.0]).cuda()
 
         self.multi_scale = multi_scale
         self.flip = flip

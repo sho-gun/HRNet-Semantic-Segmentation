@@ -478,20 +478,35 @@ class AugmentedHighResolutionNet(HighResolutionNet):
     def __init__(self, config, **kwargs):
         super(AugmentedHighResolutionNet, self).__init__(config, **kwargs)
 
+        # 1/16 (1/4 * 1/4) times of an original image size
         self.initial_fc_input_size = int(config.TRAIN.IMAGE_SIZE[0] * config.TRAIN.IMAGE_SIZE[1] * config.DATASET.NUM_CLASSES / 16)
 
-        self.fc1 = nn.Linear(self.initial_fc_input_size, 243)
-        self.fc2 = nn.Linear(243, 81)
-        self.fc3 = nn.Linear(81, 3)
+        self.fully_conv = nn.Sequential(
+            nn.Linear(self.initial_fc_input_size, 243),
+            nn.ReLU(),
+            nn.Linear(243, 81),
+            nn.ReLU(),
+            nn.Linear(81, 3)
+        )
+
+        # self.fc1 = nn.Linear(self.initial_fc_input_size, 243)
+        # self.bn1 = nn.BatchNorm1d(243)
+        # self.fc2 = nn.Linear(243, 81)
+        # self.bn2 = nn.BatchNorm1d(81)
+        # self.fc3 = nn.Linear(81, 3)
 
     def forward(self, x):
         x = super(AugmentedHighResolutionNet, self).forward(x)
-        x = x.view(-1, self.initial_fc_input_size)
-        x = self.fc1(x)
-        x = F.relu(x)
-        x = self.fc2(x)
-        x = F.relu(x)
-        x = self.fc3(x)
+        x = self.fully_conv(x.view(-1, self.initial_fc_input_size))
+
+        # x = x.view(-1, self.initial_fc_input_size)
+        # x = self.fc1(x)
+        # x = F.relu(x)
+        # x = self.bn1(x)
+        # x = self.fc2(x)
+        # x = F.relu(x)
+        # x = self.bn2(x)
+        # x = self.fc3(x)
 
         return x
 
