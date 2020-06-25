@@ -127,7 +127,7 @@ def validate(config, testloader, model, writer_dict, device):
 
     if config.LOSS.USE_MSE:
         print_loss = ave_loss.average()
-        return print_loss, 0, 0
+        return print_loss, 1-print_loss, losses.cpu().numpy().tolist()
 
     confusion_matrix = torch.from_numpy(confusion_matrix).to(device)
     reduced_confusion_matrix = reduce_tensor(confusion_matrix)
@@ -164,22 +164,28 @@ def testval(config, test_dataset, testloader, model,
                         scales=config.TEST.SCALE_LIST,
                         flip=config.TEST.FLIP_TEST)
 
-            if pred.size()[-2] != size[-2] or pred.size()[-1] != size[-1]:
-                pred = F.upsample(pred, (size[-2], size[-1]),
-                                   mode='bilinear')
+            if config.LOSS.USE_MSE:
+                pred = pred.cpu().numpy()[0].tolist()
+                pred = [round(p) for p in pred]
+                print(pred)
 
-            confusion_matrix += get_confusion_matrix(
-                label,
-                pred,
-                size,
-                config.DATASET.NUM_CLASSES,
-                config.TRAIN.IGNORE_LABEL)
+            else:
+                if pred.size()[-2] != size[-2] or pred.size()[-1] != size[-1]:
+                    pred = F.upsample(pred, (size[-2], size[-1]),
+                                       mode='bilinear')
 
-            if sv_pred:
-                sv_path = os.path.join(sv_dir,'test_val_results')
-                if not os.path.exists(sv_path):
-                    os.mkdir(sv_path)
-                test_dataset.save_pred(pred, sv_path, name)
+                confusion_matrix += get_confusion_matrix(
+                    label,
+                    pred,
+                    size,
+                    config.DATASET.NUM_CLASSES,
+                    config.TRAIN.IGNORE_LABEL)
+
+                if sv_pred:
+                    sv_path = os.path.join(sv_dir,'test_val_results')
+                    if not os.path.exists(sv_path):
+                        os.mkdir(sv_path)
+                    test_dataset.save_pred(pred, sv_path, name)
 
             if index % 100 == 0:
                 logging.info('processing: %d images' % index)
