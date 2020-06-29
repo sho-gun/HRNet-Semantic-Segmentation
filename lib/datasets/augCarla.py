@@ -41,6 +41,7 @@ class AugCarla(BaseDataset):
 
         weight_coef = 1000.0
         self.class_weights = torch.FloatTensor([112.0/weight_coef, 914.0/weight_coef, 86.0/weight_coef]).cuda()
+        # self.class_weights = None
 
         self.multi_scale = multi_scale
         self.flip = flip

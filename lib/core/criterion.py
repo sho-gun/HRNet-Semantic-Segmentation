@@ -67,13 +67,15 @@ class WeightedMSE(nn.Module):
         target = target.float()
 
         if self.weight is not None:
+            eps = 1e-5
+
             # calc mse with target label of 1
             tmp_score = torch.where(
                 target == 1,
                 score,
                 torch.zeros(score.shape, dtype=torch.float32).cuda()
             )
-            loss_label1 = torch.sum((1 - self.weight) * (tmp_score - target) ** 2, dim=0)
+            loss_label1 = 0.5 * torch.sum((1 - self.weight) * (tmp_score - target) ** 2, dim=0)
 
             # calc mse with target label of 0
             tmp_score = torch.where(
@@ -81,8 +83,8 @@ class WeightedMSE(nn.Module):
                 score,
                 torch.ones(score.shape, dtype=torch.float32).cuda()
             )
-            loss_label0 = torch.sum(self.weight * (tmp_score - target) ** 2, dim=0)
+            loss_label0 = 0.5 * torch.sum(self.weight * (tmp_score - target) ** 2, dim=0)
 
             return loss_label1 + loss_label0
         else:
-            return torch.sum((score - target) ** 2, dim=0)
+            return 0.5 * torch.sum((score - target) ** 2, dim=0)

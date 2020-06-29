@@ -478,13 +478,22 @@ class AugmentedHighResolutionNet(HighResolutionNet):
     def __init__(self, config, **kwargs):
         super(AugmentedHighResolutionNet, self).__init__(config, **kwargs)
 
+        # Original HRNet will never updates its parameters
         for parameter in self.parameters():
             parameter.requires_grad = False
 
-        # 1/16 (1/4 * 1/4) times of an original image size
-        self.initial_fc_input_size = int(config.TRAIN.IMAGE_SIZE[0] * config.TRAIN.IMAGE_SIZE[1] * config.DATASET.NUM_CLASSES / 16)
+        # 1/16 (1/4 * 1/4) times of an original image size * 1/4 (additional_conv layer)
+        self.initial_fc_input_size = int(config.TRAIN.IMAGE_SIZE[0] * config.TRAIN.IMAGE_SIZE[1] * 3 / 16 / 4)
 
-        self.fully_conv = nn.Sequential(
+        self.additional_conv = nn.Sequential(
+            nn.Conv2d(config.DATASET.NUM_CLASSES, 3, kernel_size=3, stride=2, padding=1, bias=False),
+            BatchNorm2d(3, momentum=BN_MOMENTUM),
+            nn.Conv2d(3, 3, kernel_size=3, stride=1, padding=1, bias=False),
+            BatchNorm2d(3, momentum=BN_MOMENTUM),
+            nn.ReLU()
+        )
+
+        self.fully_conn = nn.Sequential(
             nn.Linear(self.initial_fc_input_size, 243),
             nn.ReLU(),
             nn.Linear(243, 81),
@@ -495,17 +504,16 @@ class AugmentedHighResolutionNet(HighResolutionNet):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        # with torch.no_grad():
         x = super(AugmentedHighResolutionNet, self).forward(x)
 
-        x = self.fully_conv(x.view(-1, self.initial_fc_input_size))
+        x = self.additional_conv(x)
+        x = self.fully_conn(x.view(-1, self.initial_fc_input_size))
         x = self.sigmoid(x)
 
         return x
 
 
 def get_seg_model(cfg, **kwargs):
-    # model = HighResolutionNet(cfg, **kwargs)
     model = AugmentedHighResolutionNet(cfg, **kwargs)
     model.init_weights(cfg.MODEL.PRETRAINED)
 

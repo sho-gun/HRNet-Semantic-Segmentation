@@ -165,8 +165,8 @@ def testval(config, test_dataset, testloader, model,
                         flip=config.TEST.FLIP_TEST)
 
             if config.LOSS.USE_MSE:
-                pred = pred.cpu().numpy()[0].tolist()
-                pred = [round(p) for p in pred]
+                pred = pred.cpu().numpy().tolist()
+                # pred = [round(p) for p in pred]
                 print(pred)
 
             else:
