@@ -155,6 +155,14 @@ def testval(config, test_dataset, testloader, model,
     confusion_matrix = np.zeros(
         (config.DATASET.NUM_CLASSES, config.DATASET.NUM_CLASSES))
     with torch.no_grad():
+
+        if config.LOSS.USE_MSE:
+            tp_array = np.array([])
+            fp_array = np.array([])
+            tn_array = np.array([])
+            fn_array = np.array([])
+            total = 0
+
         for index, batch in enumerate(tqdm(testloader)):
             image, label, _, name = batch
             size = label.size()
@@ -165,9 +173,30 @@ def testval(config, test_dataset, testloader, model,
                         flip=config.TEST.FLIP_TEST)
 
             if config.LOSS.USE_MSE:
-                pred = pred.cpu().numpy().tolist()
-                # pred = [round(p) for p in pred]
+                pred = pred.cpu().numpy()[0]
+                label = label.cpu().numpy()[0]
                 print(pred)
+
+                if len(tp_array) < len(pred):
+                    for i in range(len(pred)):
+                        tp_array = np.append(tp_array, 0)
+                        fp_array = np.append(fp_array, 0)
+                        tn_array = np.append(tn_array, 0)
+                        fn_array = np.append(fn_array, 0)
+
+                pred = [round(p) for p in pred]
+                total += 1
+                for i, (p, l) in enumerate(zip(pred, label)):
+                    if p == 1:
+                        if l == 1:
+                            tp_array[i] += 1
+                        else:
+                            fp_array[i] += 1
+                    else:
+                        if l == 1:
+                            fn_array[i] += 1
+                        else:
+                            tn_array[i] += 1
 
             else:
                 if pred.size()[-2] != size[-2] or pred.size()[-1] != size[-1]:
@@ -195,6 +224,15 @@ def testval(config, test_dataset, testloader, model,
                 IoU_array = (tp / np.maximum(1.0, pos + res - tp))
                 mean_IoU = IoU_array.mean()
                 logging.info('mIoU: %.4f' % (mean_IoU))
+
+    if config.LOSS.USE_MSE:
+        logging.info('TP: {}'.format(tp_array))
+        logging.info('FP: {}'.format(fp_array))
+        logging.info('TN: {}'.format(tn_array))
+        logging.info('FN: {}'.format(fn_array))
+        logging.info('Accuracy: {}'.format((tp_array + tn_array)/total))
+        logging.info('Recall: {}'.format(tp_array/(tp_array + fn_array)))
+        logging.info('Precision: {}'.format(tp_array/(tp_array + fp_array)))
 
     pos = confusion_matrix.sum(1)
     res = confusion_matrix.sum(0)
