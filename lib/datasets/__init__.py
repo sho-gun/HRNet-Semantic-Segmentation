@@ -13,3 +13,4 @@ from .lip import LIP as lip
 from .pascal_ctx import PASCALContext as pascal_ctx
 from .carla import Carla as carla
 from .augCarla import AugCarla as augCarla
+from .myCityscapes import MyCityscapes as myCityscapes

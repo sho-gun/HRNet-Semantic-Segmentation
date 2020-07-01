@@ -15,7 +15,7 @@ from torch.nn import functional as F
 
 from .base_dataset import BaseDataset
 
-class Carla(BaseDataset):
+class MyCityscapes(BaseDataset):
     def __init__(self,
                  root,
                  list_path,
@@ -32,7 +32,7 @@ class Carla(BaseDataset):
                  mean=[0.485, 0.456, 0.406],
                  std=[0.229, 0.224, 0.225]):
 
-        super(Carla, self).__init__(ignore_label, base_size,
+        super(MyCityscapes, self).__init__(ignore_label, base_size,
                 crop_size, downsample_rate, scale_factor, mean, std,)
 
         self.root = root
@@ -51,13 +51,19 @@ class Carla(BaseDataset):
             self.files = self.files[:num_samples]
 
         # Road and the others
-        self.label_mapping = {0: 0, 1: 0,
-                              2: 1, 3: 0,
-                              4: 0, 5: 0,
-                              6: 0, 7: 0,
-                              8: 0, 9: 0,
-                              10: 0, 11: 0, 12: 0}
-        self.inv_label_mapping = {0: 0, 1: 2}
+        self.label_mapping = {-1: 0, 0: 0,
+                              1: 0, 2: 0,
+                              3: 0, 4: 0,
+                              5: 0, 6: 0,
+                              7: 1, 8: 0, 9: 0,
+                              10: 0, 11: 0, 12: 0,
+                              13: 0, 14: 0, 15: 0,
+                              16: 0, 17: 0, 18: 0,
+                              19: 0, 20: 0, 21: 0, 22: 0, 23: 0, 24: 0,
+                              25: 0, 26: 0, 27: 0, 28: 0,
+                              29: 0, 30: 0,
+                              31: 0, 32: 0, 33: 0}
+        self.inv_label_mapping = {0: 0, 1: 7}
 
     def read_files(self):
         files = []
@@ -94,7 +100,7 @@ class Carla(BaseDataset):
     def __getitem__(self, index):
         item = self.files[index]
         name = item["name"]
-        image = cv2.imread(os.path.join(self.root,'carla',item["img"]),
+        image = cv2.imread(os.path.join(self.root,'myCityscapes',item["img"]),
                            cv2.IMREAD_COLOR)
         size = image.shape
 
@@ -104,7 +110,7 @@ class Carla(BaseDataset):
 
             return image.copy(), np.array(size), name
 
-        label = cv2.imread(os.path.join(self.root,'carla',item["label"]),
+        label = cv2.imread(os.path.join(self.root,'myCityscapes',item["label"]),
                            cv2.IMREAD_GRAYSCALE)
         label = self.convert_label(label)
 
