@@ -117,8 +117,10 @@ class CityscapeJunctions(BaseDataset):
             label = label_file.readline().strip().split(' ')
             label = [float(lbl) for lbl in label]
 
-        image, _ = self.gen_sample(image, None, self.multi_scale, is_flip=False, center_crop_test=False)
-        
+        image = self.image_resize(image, self.base_size)
+        image = self.input_transform(image)
+        image = image.transpose((2, 0, 1))
+
         return image.copy(), np.array(label, dtype=np.float32), np.array(size), name
 
     def multi_scale_inference(self, model, image, scales=[1], flip=False):

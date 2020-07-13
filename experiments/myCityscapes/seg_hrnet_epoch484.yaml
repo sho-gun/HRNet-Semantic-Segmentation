@@ -74,7 +74,7 @@ LOSS:
 TRAIN:
   IMAGE_SIZE:
   - 800
-  - 600
+  - 400
   BASE_SIZE: 800
   BATCH_SIZE_PER_GPU: 2
   SHUFFLE: true
@@ -94,7 +94,7 @@ TRAIN:
 TEST:
   IMAGE_SIZE:
   - 800
-  - 600
+  - 400
   BASE_SIZE: 800
   BATCH_SIZE_PER_GPU: 2
   FLIP_TEST: false
