@@ -51,19 +51,25 @@ class MyCityscapes(BaseDataset):
             self.files = self.files[:num_samples]
 
         # Road and the others
-        self.label_mapping = {-1: 0, 0: 0,
-                              1: 0, 2: 0,
-                              3: 0, 4: 0,
-                              5: 0, 6: 0,
-                              7: 1, 8: 0, 9: 0,
-                              10: 0, 11: 0, 12: 0,
-                              13: 0, 14: 0, 15: 0,
-                              16: 0, 17: 0, 18: 0,
-                              19: 0, 20: 0, 21: 0, 22: 0, 23: 0, 24: 0,
-                              25: 0, 26: 0, 27: 0, 28: 0,
-                              29: 0, 30: 0,
-                              31: 0, 32: 0, 33: 0}
-        self.inv_label_mapping = {0: 0, 1: 7}
+        self.label_mapping = {-1: 0, 0: 0, # licence plate, unlabeled
+                              1: 1, 2: 0, # ego vehicle, rectification border
+                              3: 0, 4: 0, # out of roi, static
+                              5: 0, 6: 0, # dynamic, ground
+                              7: 2, 8: 0, 9: 0, # road, sidewalk, parking
+                              10: 0, 11: 3, 12: 4, # rail track, building, wall
+                              13: 5, 14: 6, 15: 0, # fence, guard rail, bridge
+                              16: 0, 17: 0, 18: 0, # tunnel, pole, pole group
+                              19: 0, 20: 0, 21: 7, 22: 0, 23: 0, 24: 8, # traffic light, traffic sign, vegetaion, terrain, sky, person
+                              25: 9, 26: 10, 27: 11, 28: 12, # rider, car, truck, bus
+                              29: 13, 30: 14, # caravan, trailer
+                              31: 15, 32: 16, 33: 17} # train, motorcycle, biycle
+        # self.inv_label_mapping = {0: 0, 1: 7}
+        self.inv_label_mapping = {0: 0, 1: 1, 2: 7,
+                                3: 11, 4: 12, 5: 13,
+                                6: 14, 7: 21, 8: 24,
+                                9: 25, 10: 26, 11: 27,
+                                12: 28, 13: 29, 14: 30,
+                                15: 31, 16: 32, 17: 33}
 
     def read_files(self):
         files = []
