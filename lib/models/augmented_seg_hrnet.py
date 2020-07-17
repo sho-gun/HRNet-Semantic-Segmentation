@@ -487,7 +487,7 @@ class AugmentedHighResolutionNet(HighResolutionNet):
 
         self.additional_conv = nn.Sequential(
             nn.Conv2d(config.DATASET.NUM_CLASSES, 9, kernel_size=3, stride=2, padding=1, bias=False),
-            BatchNorm2d(3, momentum=BN_MOMENTUM),
+            BatchNorm2d(9, momentum=BN_MOMENTUM),
             nn.Conv2d(9, 9, kernel_size=3, stride=1, padding=1, bias=False),
             BatchNorm2d(9, momentum=BN_MOMENTUM),
             nn.ReLU(),
