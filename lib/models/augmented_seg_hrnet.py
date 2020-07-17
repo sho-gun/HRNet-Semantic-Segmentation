@@ -483,13 +483,16 @@ class AugmentedHighResolutionNet(HighResolutionNet):
             parameter.requires_grad = False
 
         # 1/16 (1/4 * 1/4) times of an original image size * 1/4 (additional_conv layer)
-        self.initial_fc_input_size = int(config.TRAIN.IMAGE_SIZE[0] * config.TRAIN.IMAGE_SIZE[1] * 3 / 16 / 4)
+        self.initial_fc_input_size = int(config.TRAIN.IMAGE_SIZE[0] * config.TRAIN.IMAGE_SIZE[1] * 9 / 16 / 4)
 
         self.additional_conv = nn.Sequential(
-            nn.Conv2d(config.DATASET.NUM_CLASSES, 3, kernel_size=3, stride=2, padding=1, bias=False),
+            nn.Conv2d(config.DATASET.NUM_CLASSES, 9, kernel_size=3, stride=2, padding=1, bias=False),
             BatchNorm2d(3, momentum=BN_MOMENTUM),
-            nn.Conv2d(3, 3, kernel_size=3, stride=1, padding=1, bias=False),
-            BatchNorm2d(3, momentum=BN_MOMENTUM),
+            nn.Conv2d(9, 9, kernel_size=3, stride=1, padding=1, bias=False),
+            BatchNorm2d(9, momentum=BN_MOMENTUM),
+            nn.ReLU(),
+            nn.Conv2d(9, 9, kernel_size=3, stride=1, padding=1, bias=False),
+            BatchNorm2d(9, momentum=BN_MOMENTUM),
             nn.ReLU()
         )
 
