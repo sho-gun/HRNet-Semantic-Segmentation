@@ -15,3 +15,4 @@ from .carla import Carla as carla
 from .augCarla import AugCarla as augCarla
 from .myCityscapes import MyCityscapes as myCityscapes
 from .cityscapeJunctions import CityscapeJunctions as cityscapeJunctions
+from .small_intersection import SmallIntersection as small_intersection
