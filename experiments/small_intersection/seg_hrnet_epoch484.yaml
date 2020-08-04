@@ -13,7 +13,7 @@ DATASET:
   ROOT: 'data/'
   TEST_SET: 'list/small_intersection/trainval.lst'
   TRAIN_SET: 'list/small_intersection/train.lst'
-  NUM_CLASSES: 2
+  NUM_CLASSES: 11
 MODEL:
   NAME: seg_hrnet
   PRETRAINED: 'output/carla/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484/best.pth'
