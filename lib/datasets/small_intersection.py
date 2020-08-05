@@ -85,14 +85,26 @@ class SmallIntersection(BaseDataset):
 
             return image.copy(), np.array(size), name
 
-        label = cv2.imread(os.path.join(self.root,'small_intersection',item["label"]),
-                           cv2.IMREAD_GRAYSCALE)
+        if '.txt' in item["label"]:
+            with open(os.path.join(self.root,'small_intersection',item["label"]), 'r') as label_file:
+                label = label_file.readline().strip().split(' ')
+                label = [float(lbl) for lbl in label]
 
-        image, label = self.gen_sample(image, label,
-                                self.multi_scale, self.flip,
-                                self.center_crop_test)
+            image = self.image_resize(image, self.base_size)
+            image = self.input_transform(image)
+            image = image.transpose((2, 0, 1))
 
-        return image.copy(), label.copy(), np.array(size), name
+            return image.copy(), np.array(label, dtype=np.float32), np.array(size), name
+
+        else:
+            label = cv2.imread(os.path.join(self.root,'small_intersection',item["label"]),
+                               cv2.IMREAD_GRAYSCALE)
+
+            image, label = self.gen_sample(image, label,
+                                    self.multi_scale, self.flip,
+                                    self.center_crop_test)
+
+            return image.copy(), label.copy(), np.array(size), name
 
     def multi_scale_inference(self, model, image, scales=[1], flip=False):
         batch, _, ori_height, ori_width = image.size()
