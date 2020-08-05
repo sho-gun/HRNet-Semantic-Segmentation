@@ -50,7 +50,7 @@ class SmallIntersection(BaseDataset):
         if num_samples:
             self.files = self.files[:num_samples]
 
-        self.junction_classification = '.txt' in self.files[index]["label"]
+        self.junction_classification = '.txt' in self.files[0]["label"]
 
     def read_files(self):
         files = []
