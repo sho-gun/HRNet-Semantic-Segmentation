@@ -50,6 +50,8 @@ class SmallIntersection(BaseDataset):
         if num_samples:
             self.files = self.files[:num_samples]
 
+        self.junction_classification = False
+
     def read_files(self):
         files = []
         if 'test' in self.list_path:
@@ -86,6 +88,7 @@ class SmallIntersection(BaseDataset):
             return image.copy(), np.array(size), name
 
         if '.txt' in item["label"]:
+            self.junction_classification = True
             with open(os.path.join(self.root,'small_intersection',item["label"]), 'r') as label_file:
                 label = label_file.readline().strip().split(' ')
                 label = [float(lbl) for lbl in label]
@@ -109,6 +112,11 @@ class SmallIntersection(BaseDataset):
     def multi_scale_inference(self, model, image, scales=[1], flip=False):
         batch, _, ori_height, ori_width = image.size()
         assert batch == 1, "only supporting batchsize 1."
+
+        if self.junction_classification:
+            pred = model(image)
+            return pred
+
         image = image.numpy()[0].transpose((1,2,0)).copy()
         stride_h = np.int(self.crop_size[0] * 1.0)
         stride_w = np.int(self.crop_size[1] * 1.0)
