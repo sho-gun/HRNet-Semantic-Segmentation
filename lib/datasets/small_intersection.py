@@ -50,7 +50,7 @@ class SmallIntersection(BaseDataset):
         if num_samples:
             self.files = self.files[:num_samples]
 
-        self.junction_classification = False
+        self.junction_classification = '.txt' in self.files[index]["label"]
 
     def read_files(self):
         files = []
@@ -88,7 +88,6 @@ class SmallIntersection(BaseDataset):
             return image.copy(), np.array(size), name
 
         if '.txt' in item["label"]:
-            self.junction_classification = True
             with open(os.path.join(self.root,'small_intersection',item["label"]), 'r') as label_file:
                 label = label_file.readline().strip().split(' ')
                 label = [float(lbl) for lbl in label]
