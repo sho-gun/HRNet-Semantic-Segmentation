@@ -85,6 +85,8 @@ _C.TRAIN.SHUFFLE = True
 # only using some training samples
 _C.TRAIN.NUM_SAMPLES = 0
 
+_C.TRAIN.FREEZE_HRNET = True
+
 # testing
 _C.TEST = CN()
 

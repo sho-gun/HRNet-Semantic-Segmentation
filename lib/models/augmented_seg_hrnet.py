@@ -479,8 +479,9 @@ class AugmentedHighResolutionNet(HighResolutionNet):
         super(AugmentedHighResolutionNet, self).__init__(config, **kwargs)
 
         # Original HRNet will never updates its parameters
-        for parameter in self.parameters():
-            parameter.requires_grad = False
+        if config.TRAIN.FREEZE_HRNET:
+            for parameter in self.parameters():
+                parameter.requires_grad = False
 
         # 1/16 (1/4 * 1/4) times of an original image size * 1/4 (additional_conv layer)
         self.initial_fc_input_size = int(config.TRAIN.IMAGE_SIZE[0] * config.TRAIN.IMAGE_SIZE[1] * 9 / 16 / 4)
